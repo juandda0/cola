@@ -1,0 +1,82 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function esMiembro(espacioId) {
+      return signedIn()
+        && request.auth.uid in get(/databases/$(database)/documents/espacios/$(espacioId)).data.miembros;
+    }
+
+    // Perfil de cada persona. Lo ve ella y quien comparta espacio con ella.
+    match /usuarios/{uid} {
+      allow read: if signedIn() && (
+        request.auth.uid == uid
+        || (resource.data.espacioId is string && esMiembro(resource.data.espacioId))
+      );
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.nombre is string
+        && request.resource.data.nombre.size() > 0
+        && request.resource.data.nombre.size() <= 30
+        && request.resource.data.color in ['rosa', 'amarillo'];
+      allow delete: if false;
+
+      // Tokens de notificaciones push (solo los ve su dueño y el servidor).
+      match /tokens/{token} {
+        allow read, write: if signedIn() && request.auth.uid == uid;
+      }
+    }
+
+    // El espacio compartido de la pareja. El id del documento es el código de
+    // invitación: quien no lo conoce no puede unirse ni leerlo.
+    match /espacios/{espacioId} {
+      allow read: if signedIn() && request.auth.uid in resource.data.miembros;
+
+      allow create: if signedIn()
+        && request.resource.data.miembros == [request.auth.uid]
+        && request.resource.data.horasRecordatorio is list;
+
+      allow update: if signedIn() && (
+        // Un miembro cambia ajustes (no la lista de miembros).
+        (request.auth.uid in resource.data.miembros
+          && request.resource.data.miembros == resource.data.miembros
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['horasRecordatorio']))
+        // Un miembro sale del espacio (solo se quita a sí mismo).
+        || (request.auth.uid in resource.data.miembros
+          && request.resource.data.miembros == resource.data.miembros.removeAll([request.auth.uid])
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['miembros']))
+        // La segunda persona se une conociendo el código (el id).
+        || (!(request.auth.uid in resource.data.miembros)
+          && resource.data.miembros.size() == 1
+          && request.resource.data.miembros == resource.data.miembros.concat([request.auth.uid])
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['miembros']))
+      );
+
+      allow delete: if false;
+
+      // La cola de actividades.
+      match /actividades/{actividadId} {
+        allow read: if esMiembro(espacioId);
+        allow create: if esMiembro(espacioId)
+          && request.resource.data.creadaPor == request.auth.uid
+          && request.resource.data.estado == 'pendiente'
+          && request.resource.data.titulo is string
+          && request.resource.data.titulo.size() > 0
+          && request.resource.data.titulo.size() <= 140
+          && request.resource.data.creadaEn == request.time;
+        allow update: if esMiembro(espacioId)
+          && request.resource.data.creadaPor == resource.data.creadaPor
+          && request.resource.data.creadaEn == resource.data.creadaEn
+          && request.resource.data.titulo is string
+          && request.resource.data.titulo.size() > 0
+          && request.resource.data.titulo.size() <= 140
+          && request.resource.data.estado in ['pendiente', 'completada'];
+        allow delete: if esMiembro(espacioId);
+      }
+    }
+  }
+}

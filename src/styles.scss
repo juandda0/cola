@@ -1,0 +1,246 @@
+/* Estilo minimalista tipo Notion · primero móvil.
+   El color de acento cambia según quién usa la app (data-tema en <html>). */
+
+:root {
+  --rosa: #e8559a;
+  --amarillo: #f5c518;
+
+  --bg: #ffffff;
+  --bg-suave: #f7f6f3;
+  --bg-hover: #efeeeb;
+  --texto: #37352f;
+  --texto-2: #787774;
+  --texto-3: #acaba7;
+  --borde: #e9e9e7;
+  --peligro: #d44c47;
+
+  --radio: 8px;
+  --sombra: 0 1px 2px rgb(15 15 15 / 0.08), 0 4px 14px rgb(15 15 15 / 0.08);
+
+  --fuente: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  color-scheme: light dark;
+}
+
+:root,
+:root[data-tema='amarillo'] {
+  --acento: #f5c518;
+  --acento-tinta: #3a2e00; /* texto sobre el acento */
+  --acento-suave: #fff7d6;
+  --acento-texto: #946b00; /* acento usado como texto */
+}
+
+:root[data-tema='rosa'] {
+  --acento: #e8559a;
+  --acento-tinta: #ffffff;
+  --acento-suave: #fdecf4;
+  --acento-texto: #c2307b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #191919;
+    --bg-suave: #202020;
+    --bg-hover: #2b2b2b;
+    --texto: #ebebea;
+    --texto-2: #9b9a97;
+    --texto-3: #5f5e5b;
+    --borde: #2f2f2f;
+    --peligro: #ff7369;
+    --sombra: 0 1px 2px rgb(0 0 0 / 0.4), 0 4px 14px rgb(0 0 0 / 0.4);
+  }
+  :root,
+  :root[data-tema='amarillo'] {
+    --acento-suave: #2d2a14;
+    --acento-texto: #f2cf55;
+  }
+  :root[data-tema='rosa'] {
+    --acento: #ec5fa3;
+    --acento-suave: #321c29;
+    --acento-texto: #f58fc2;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--texto);
+  font-family: var(--fuente);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+/* ── Piezas reutilizables ─────────────────────────────────────────── */
+
+.pagina {
+  padding: calc(20px + env(safe-area-inset-top)) 16px 24px;
+}
+
+.titulo {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.subtitulo {
+  color: var(--texto-2);
+  font-size: 14px;
+  margin-top: 2px;
+}
+
+.etiqueta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 28px 0 8px;
+  color: var(--texto-2);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.contador {
+  padding: 0 6px;
+  border-radius: 10px;
+  background: var(--bg-hover);
+  font-size: 11px;
+  letter-spacing: 0;
+}
+
+.tarjeta {
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--bg);
+}
+
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--radio);
+  background: var(--acento);
+  color: var(--acento-tinta);
+  font-weight: 600;
+  transition: filter 0.15s, transform 0.1s;
+}
+.boton:hover {
+  filter: brightness(0.96);
+}
+.boton:active {
+  transform: scale(0.98);
+}
+.boton:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.boton.suave {
+  background: var(--bg-hover);
+  color: var(--texto);
+}
+.boton.contorno {
+  background: transparent;
+  border: 1px solid var(--borde);
+  color: var(--texto);
+}
+.boton.peligro {
+  background: transparent;
+  color: var(--peligro);
+}
+.boton.ancho {
+  width: 100%;
+}
+
+.campo {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--bg);
+  font-size: 16px; /* evita el zoom automático en iPhone */
+}
+.campo:focus {
+  outline: none;
+  border-color: var(--acento);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--acento) 30%, transparent);
+}
+.campo::placeholder {
+  color: var(--texto-3);
+}
+
+.punto {
+  display: inline-block;
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--texto-3);
+}
+.punto.rosa {
+  background: var(--rosa);
+}
+.punto.amarillo {
+  background: var(--amarillo);
+}
+
+.vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 36px 16px;
+  color: var(--texto-2);
+  text-align: center;
+}
+.vacio strong {
+  color: var(--texto);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
